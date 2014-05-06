@@ -5,17 +5,22 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Calendar;
+
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
  
-public class MonthPanel extends JPanel {
+public class MonthPanel extends JPanel implements ActionListener{
 
 	private static final long serialVersionUID = 1L;
 
 	protected int month;
 	protected int year;
+	protected JButton createApptBtn = new JButton("Create Appointment");
 
 	protected String[] monthNames = { "January", "February", "March", "April",
 			"May", "June", "July", "August", "September", "October",
@@ -29,14 +34,21 @@ public class MonthPanel extends JPanel {
 
 		this.add(createGUI());
 	}
+	
 
 	protected JPanel createGUI() {
+		createApptBtn.addActionListener(this);
+		
 		JPanel monthPanel = new JPanel(true);
 		monthPanel.setLayout(new BorderLayout());
 		monthPanel.setBackground(Color.WHITE);
 		monthPanel.setForeground(Color.BLACK);
+		
+		monthPanel.add(createApptBtn);
 		monthPanel.add(createTitleGUI(), BorderLayout.NORTH);
 		monthPanel.add(createDaysGUI(), BorderLayout.SOUTH);
+		
+		
 
 		return monthPanel;
 	}
@@ -55,7 +67,7 @@ public class MonthPanel extends JPanel {
 
 	protected JPanel createDaysGUI() {
 		JPanel dayPanel = new JPanel(true);
-		dayPanel.setLayout(new GridLayout(0, dayNames.length));
+		dayPanel.setLayout(new GridLayout(0, dayNames.length)); 
 		dayPanel.setBounds(getVisibleRect());
 		Calendar today = Calendar.getInstance();
 		int tMonth = today.get(Calendar.MONTH);
@@ -86,6 +98,14 @@ public class MonthPanel extends JPanel {
 
 		while (iterator.getTimeInMillis() < maximum.getTimeInMillis()) {
 			JButton b = new JButton();
+
+
+//b.setOpaque(false);
+//b.setContentAreaFilled(false);
+//b.setBorderPainted(false);
+
+
+
 			int lMonth = iterator.get(Calendar.MONTH);
 			int lYear = iterator.get(Calendar.YEAR);
 
@@ -123,4 +143,11 @@ public class MonthPanel extends JPanel {
 		return dayPanel;
 	}
 
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if(e.getSource() == createApptBtn) { //Create Appointment button clicked..
+			new CreateAppointment();
+		}
+	}
 }
