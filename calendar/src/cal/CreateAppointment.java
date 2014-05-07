@@ -1,10 +1,24 @@
 package cal;
 
+/**
+ * CreateAppointment class
+ *  constructs CreateAppointment dialog, responsible for using PUSHFETCH to 
+ *  PUSH new appointments into database.
+ *  
+ *   uses JDatePicker Copyright 2004 Juan Heyns. All rights reserved.
+ *   
+ *   @author Zisis - 11845663
+ */
+
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -18,37 +32,44 @@ import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-public class CreateAppointment extends JFrame implements ActionListener{
+import net.sourceforge.jdatepicker.JDatePicker;
+import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
+import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
+import net.sourceforge.jdatepicker.impl.UtilDateModel;
+
+public class CreateAppointment extends JFrame implements ActionListener {
 	
 	JButton	 attendeeAddBtn = new JButton("Add");
 	JButton  createBtn = new JButton("Create");
 	JButton  clearBtn = new JButton("Clear");
 	JButton  closeBtn = new JButton("Close");
-	JLabel	 dateLbl = new JLabel("Date");
-	JLabel	 timeLbl = new JLabel("Time");
-	JLabel	 locationLbl = new JLabel("Location");
-	JLabel	 attendeesLbl = new JLabel("Attendees");
-	JLabel	 subjectLbl = new JLabel("Subject");
-	JLabel	 detailsLbl = new JLabel("Details");
-	//JDatePicker datePick;	//
+	JDatePickerImpl datePicker;
+	UtilDateModel dateModel;
 	JSpinner	timePick = new JSpinner(new SpinnerDateModel() );
 	JComboBox	attendeesPick = new JComboBox();
 	JTextField	subjectText = new JTextField();
 	JTextField	locationText = new JTextField();
-	JTextArea	detailsText = new JTextArea();
-	JTextArea	reviewText;
-	
+	JTextField	detailsText = new JTextField();
+	JTextArea	dateReview = new JTextArea();
+	JTextArea	timeReview = new JTextArea();
+	JTextArea	locReview = new JTextArea();
+	JTextArea	attendeesReview = new JTextArea();
+	JTextArea	subjectReview = new JTextArea();
+	JTextArea	detailsReview = new JTextArea();
 
+	
 	
 	public CreateAppointment(){
 		displayUI();
 	}
 
 
-	public CreateAppointment(SimpleDateFormat date){
+	public CreateAppointment(UtilDateModel date){ //??
 		if(date != null){
-		//	datePick.setDate(date);
+		dateModel.setDate(date.getYear(), date.getMonth(), date.getDay());
 		}
 		
 	}
@@ -66,42 +87,77 @@ public class CreateAppointment extends JFrame implements ActionListener{
 		this.getContentPane().setLayout(new BorderLayout());
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		this.setTitle("Create Appointment");
-		//this.setSize(400, 500);
+		this.setSize(400, 500);
 		
-		JPanel reviewPanel = new JPanel(new GridBagLayout());	//right panel
-		reviewPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-		reviewPanel.add(reviewText = new JTextArea());
+		JPanel reviewPanel = new JPanel(new GridLayout(13,0));					//right panel
+		reviewPanel.setBorder(BorderFactory.createEmptyBorder(10, 5, 0, 5));
+		reviewPanel.setBackground(Color.WHITE);
+		reviewPanel.add(new JLabel("Date:"));
+		dateReview.setEditable(false);
+		reviewPanel.add(dateReview);
+		
+		reviewPanel.add(new JLabel("Time:"));
+		timeReview.setEditable(false);		
+		reviewPanel.add(timeReview);
+
+		reviewPanel.add(new JLabel("Location:"));
+		locReview.setEditable(false);
+		reviewPanel.add(locReview);
+
+		reviewPanel.add(new JLabel("Attendees:"));
+		attendeesReview.setEditable(false);		
+		reviewPanel.add(attendeesReview);
+
+		reviewPanel.add(new JLabel("Subject:"));
+		subjectReview.setEditable(false);		
+		reviewPanel.add(subjectReview);
+
+		reviewPanel.add(new JLabel("Details:"));
+		detailsReview.setEditable(false);		
+		reviewPanel.add(detailsReview);
+
 		
 		JPanel dataPanel = new JPanel(new GridLayout(13,0));				//left panel
-		dataPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-		dataPanel.add(dateLbl);												//
-		//dataPanel.add(datePick);
-		dataPanel.add(timeLbl);
+		dataPanel.setBorder(BorderFactory.createEmptyBorder(10, 5, 0, 5));
+		dataPanel.add(new JLabel("Date:"));									
+		
+		dateModel = new UtilDateModel();							//Date section
+		JDatePanelImpl datePanel = new JDatePanelImpl(dateModel);
+		datePicker = new JDatePickerImpl(datePanel);
+		datePicker.addActionListener(this);
+		dataPanel.add(datePicker);
+		
+		dataPanel.add(new JLabel("Time:"));									//Time section..
 		JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(timePick, "HH:mm");
 		timePick.setEditor(timeEditor);
 		timePick.setValue(new Date());
 		dataPanel.add(timePick);
 		
-		dataPanel.add(locationLbl);
+		dataPanel.add(new JLabel("Location:"));
+		locationText.getDocument().addDocumentListener(new reviewUpdate(locationText, locReview));
 		dataPanel.add(locationText);
-		dataPanel.add(attendeesLbl);
-	
-		JPanel attendeesgrp = new JPanel(new GridLayout(0,2));	//group attendees properly together to avoid alignment issues
+		
+		dataPanel.add(new JLabel("Attendees:"));
+		JPanel attendeesgrp = new JPanel(new GridLayout(0,3));	
 		attendeesgrp.add(attendeesPick, BorderLayout.EAST);
+		attendeeAddBtn.addActionListener(this);
 		attendeesgrp.add(attendeeAddBtn, BorderLayout.WEST);
-
 		dataPanel.add(attendeesgrp);
-		dataPanel.add(subjectLbl);
+		
+		dataPanel.add(new JLabel("Subject:"));
+		subjectText.getDocument().addDocumentListener(new reviewUpdate(subjectText, subjectReview));
 		dataPanel.add(subjectText);
-		dataPanel.add(detailsLbl);
+		
+		dataPanel.add(new JLabel("Details:"));
+		detailsText.getDocument().addDocumentListener(new reviewUpdate(detailsText, detailsReview));
 		dataPanel.add(detailsText);
 		
 		JPanel basePanel = new JPanel(new GridLayout(0,2));		//CENTER panel to hold right (review) and left (appointment data) panels		
 		basePanel.add(dataPanel);
-		reviewText.setText("Date and time and this and that...");
 		basePanel.add(reviewPanel);
-
+		
 		JPanel bottomPanel = new JPanel(new GridLayout(0,3));
+		//bottomPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.BLACK));
 		bottomPanel.add(closeBtn);//, BorderLayout.PAGE_END);
 		closeBtn.addActionListener(this);
 		bottomPanel.add(clearBtn);//, BorderLayout.PAGE_END);
@@ -109,6 +165,8 @@ public class CreateAppointment extends JFrame implements ActionListener{
 		bottomPanel.add(createBtn);//, BorderLayout.PAGE_END);
 		createBtn.addActionListener(this);
 		
+		//this.getContentPane().add(dataPanel, BorderLayout.LINE_START);
+		//this.getContentPane().add(reviewPanel, BorderLayout.LINE_END);
 		this.getContentPane().add(basePanel, BorderLayout.CENTER);	
 		this.getContentPane().add(bottomPanel, BorderLayout.PAGE_END);
 		this.pack();
@@ -120,6 +178,10 @@ public class CreateAppointment extends JFrame implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
+		if( e.getSource() == datePicker){
+			dateReview.setText("");
+			dateReview.setText( datePicker.toString() );
+		}
 		if( e.getSource() == closeBtn)	//close button clicked
 			this.dispose();
 		
@@ -127,15 +189,49 @@ public class CreateAppointment extends JFrame implements ActionListener{
 			//datePick.clear();
 			//timePick.clear();
 			locationText.setText("");
+			locReview.setText("");
 			//attendeesPick.clear();
+			attendeesReview.setText("");
 			subjectText.setText("");
+			subjectReview.setText("");
 			detailsText.setText("");
-			reviewText.setText(""); //set default review text in the form of 
-									// Date:\n Time:\n Location:\n etc
+			detailsReview.setText("");
+		
 			
 		}else if( e.getSource() == createBtn){
 			//PUSH appointment..
 			
 		}
+		
+		if( e.getSource() == attendeeAddBtn){
+			attendeesReview.append(String.format(attendeesPick.toString() + ", "));
+		}
+	}
+	
+	private static class reviewUpdate implements DocumentListener {
+		
+		private JTextField	sourceText;
+		private JTextArea 	targetText;
+		
+		public reviewUpdate(JTextField sourceText, JTextArea targetText){
+			this.sourceText = sourceText;
+			this.targetText = targetText;
+		}
+	
+		@Override
+		public void insertUpdate(DocumentEvent e) {
+			targetText.setText(sourceText.getText());
+		}
+
+		@Override
+		public void removeUpdate(DocumentEvent e) {
+			targetText.setText(sourceText.getText());			
+		}
+
+		@Override
+		public void changedUpdate(DocumentEvent e) {
+			targetText.setText(sourceText.getText());			
+		}
+		
 	}
 }
