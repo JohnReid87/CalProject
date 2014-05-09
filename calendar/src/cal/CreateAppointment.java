@@ -2,7 +2,7 @@ package cal;
 
 /**
  * CreateAppointment class
- *  constructs CreateAppointment dialog, responsible for using PUSHFETCH to 
+ *  constructs CreateAppointment dialog, responsible for using fetchPush class to 
  *  PUSH new appointments into database.
  *  
  *   uses JDatePicker Copyright 2004 Juan Heyns. All rights reserved.
@@ -18,8 +18,11 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.BorderFactory;
@@ -32,6 +35,8 @@ import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -41,6 +46,9 @@ import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
 import net.sourceforge.jdatepicker.impl.UtilDateModel;
 
 public class CreateAppointment extends JFrame implements ActionListener {
+	
+	
+	private static final long serialVersionUID = 1L;
 	
 	JButton	 attendeeAddBtn = new JButton("Add");
 	JButton  createBtn = new JButton("Create");
@@ -58,9 +66,7 @@ public class CreateAppointment extends JFrame implements ActionListener {
 	JTextArea	locReview = new JTextArea();
 	JTextArea	attendeesReview = new JTextArea();
 	JTextArea	subjectReview = new JTextArea();
-	JTextArea	detailsReview = new JTextArea();
-
-	
+	JTextArea	detailsReview = new JTextArea();	
 	
 	public CreateAppointment(){
 		displayUI();
@@ -70,8 +76,7 @@ public class CreateAppointment extends JFrame implements ActionListener {
 	public CreateAppointment(UtilDateModel date){ //??
 		if(date != null){
 		dateModel.setDate(date.getYear(), date.getMonth(), date.getDay());
-		}
-		
+		}	
 	}
 	
 	public CreateAppointment(SimpleDateFormat date, SimpleDateFormat time){
@@ -121,16 +126,30 @@ public class CreateAppointment extends JFrame implements ActionListener {
 		dataPanel.setBorder(BorderFactory.createEmptyBorder(10, 5, 0, 5));
 		dataPanel.add(new JLabel("Date:"));									
 		
-		dateModel = new UtilDateModel();							//Date section
+		dateModel = new UtilDateModel();									//Date section
 		JDatePanelImpl datePanel = new JDatePanelImpl(dateModel);
 		datePicker = new JDatePickerImpl(datePanel);
-		datePicker.addActionListener(this);
+		/*datePicker.addPropertyChangeListener(new PropertyChangeListener() {	// 
+			public void propertyChange(PropertyChangeEvent arg0) {
+				dateReview.setText("");
+				dateReview.setText( datePicker.toString() );
+				}
+				}); 
+		*/
 		dataPanel.add(datePicker);
 		
 		dataPanel.add(new JLabel("Time:"));									//Time section..
 		JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(timePick, "HH:mm");
 		timePick.setEditor(timeEditor);
 		timePick.setValue(new Date());
+		timePick.addChangeListener(new ChangeListener(){
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				timeReview.setText(timePick.getValue().toString());
+			}
+			
+		});
 		dataPanel.add(timePick);
 		
 		dataPanel.add(new JLabel("Location:"));
@@ -174,23 +193,16 @@ public class CreateAppointment extends JFrame implements ActionListener {
 		
 	}
 
-
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		if( e.getSource() == datePicker){
-			dateReview.setText("");
-			dateReview.setText( datePicker.toString() );
-		}
 		if( e.getSource() == closeBtn)	//close button clicked
 			this.dispose();
 		
 		if( e.getSource() == clearBtn){
-			//datePick.clear();
-			//timePick.clear();
+
 			locationText.setText("");
 			locReview.setText("");
-			//attendeesPick.clear();
 			attendeesReview.setText("");
 			subjectText.setText("");
 			subjectReview.setText("");
@@ -200,6 +212,7 @@ public class CreateAppointment extends JFrame implements ActionListener {
 			
 		}else if( e.getSource() == createBtn){
 			//PUSH appointment..
+			
 			
 		}
 		
