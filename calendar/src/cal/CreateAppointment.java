@@ -22,8 +22,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -56,7 +58,8 @@ public class CreateAppointment extends JFrame implements ActionListener {
 	JButton  closeBtn = new JButton("Close");
 	JDatePickerImpl datePicker;
 	UtilDateModel dateModel;
-	JSpinner	timePick = new JSpinner(new SpinnerDateModel() );
+	JSpinner	timeStart = new JSpinner(new SpinnerDateModel() );
+	JSpinner	timeEnd	= new JSpinner(new SpinnerDateModel() );
 	JComboBox	attendeesPick = new JComboBox();
 	JTextField	subjectText = new JTextField();
 	JTextField	locationText = new JTextField();
@@ -105,7 +108,7 @@ public class CreateAppointment extends JFrame implements ActionListener {
 		timeReview.setEditable(false);		
 		reviewPanel.add(timeReview);
 
-		reviewPanel.add(new JLabel("Location:"));
+		reviewPanel.add(new JLabel("Room Number:"));
 		locReview.setEditable(false);
 		reviewPanel.add(locReview);
 
@@ -139,20 +142,34 @@ public class CreateAppointment extends JFrame implements ActionListener {
 		dataPanel.add(datePicker);
 		
 		dataPanel.add(new JLabel("Time:"));									//Time section..
-		JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(timePick, "HH:mm");
-		timePick.setEditor(timeEditor);
-		timePick.setValue(new Date());
-		timePick.addChangeListener(new ChangeListener(){
+		JPanel timegrp = new JPanel(new GridLayout(0,2));
+		JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(timeStart, "HH:mm");
+		timeStart.setEditor(timeEditor);
+		timeStart.setValue(new Date());
+		timeStart.addChangeListener(new ChangeListener(){
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				timeReview.setText(timePick.getValue().toString());
+				timeReview.setText(timeStart.getValue().toString());
 			}
 			
 		});
-		dataPanel.add(timePick);
+		timegrp.add(timeStart);
+		JSpinner.DateEditor	timeEndEdit = new JSpinner.DateEditor(timeEnd,"HH:mm");
+		timeEnd.setEditor(timeEndEdit);
+		timeEnd.setValue(new Date());
+		timeEnd.addChangeListener(new ChangeListener(){
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				Date cd = (Date) timeStart.getValue();
+				if( cd.after( (Date) timeEnd.getValue() ))
+					timeEnd.setValue(cd);
+			}
+		});
+		timegrp.add(timeEnd);
+		dataPanel.add(timegrp);
 		
-		dataPanel.add(new JLabel("Location:"));
+		dataPanel.add(new JLabel("Room Number:"));
 		locationText.getDocument().addDocumentListener(new reviewUpdate(locationText, locReview));
 		dataPanel.add(locationText);
 		
@@ -211,9 +228,42 @@ public class CreateAppointment extends JFrame implements ActionListener {
 		
 			
 		}else if( e.getSource() == createBtn){
-			//PUSH appointment..
-			
-			
+		 
+			// prepare date vars for fetchPush query.
+			SimpleDateFormat crf = new SimpleDateFormat("HHmm");
+			SimpleDateFormat cdf = new SimpleDateFormat("DDmmyy");
+			String curTime = crf.format(new Date());
+		    String curDate = cdf.format(new Date());
+		   
+		    //
+		    Date dS = (Date) timeStart.getValue();
+		    Date dE = (Date) timeEnd.getValue();
+		    long duration = dS.getTime() - dE.getTime();
+		    Long diffMinutes = TimeUnit.MILLISECONDS.toMinutes(duration);
+		    
+		    String noteTxt = subjectReview.getText() + " \n" + detailsReview.getText(); 
+		    
+		    ArrayList<String> attendeesList = new ArrayList<String>();
+		    for(int i=0; i < attendeesPick.getItemCount(); i++){
+		    	attendeesList.add((String) attendeesPick.getItemAt(i));
+		    }
+		    
+		    		
+		//	PUSH appointment..
+		String personID = Integer.toString( User.getUserId() );		// get personID
+		String roomNum = locationText.getText().trim(); // get location (room number) text
+		String appTime = curTime;
+		String appDate = curDate;
+		int appDuration = diffMinutes.intValue();
+		String note = noteTxt;
+		
+		try{
+			fetchPush.addAppointment(personID, roomNum, appTime, appDate, appDuration, note, attendeesList);
+		}catch(Exception ex){
+			ex.printStackTrace();
+
+		}
+		
 		}
 		
 		if( e.getSource() == attendeeAddBtn){

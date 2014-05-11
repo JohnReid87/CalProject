@@ -4,7 +4,7 @@ public class Main {
 
 	public static void main(String[] args) { 
 		CalendarFrame ca = new CalendarFrame();
-		User usr = new User();
+		UserDialog usr = new UserDialog();
 		ca.run();
 		usr.run();
 	}
