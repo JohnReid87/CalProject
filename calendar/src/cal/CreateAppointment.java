@@ -230,8 +230,8 @@ public class CreateAppointment extends JFrame implements ActionListener {
 		}else if( e.getSource() == createBtn){
 		 
 			// prepare date vars for fetchPush query.
-			SimpleDateFormat crf = new SimpleDateFormat("HHmm");
-			SimpleDateFormat cdf = new SimpleDateFormat("DDmmyy");
+			SimpleDateFormat crf = new SimpleDateFormat("HHmmss");
+			SimpleDateFormat cdf = new SimpleDateFormat("yyyyMMdd");
 			String curTime = crf.format(new Date());
 		    String curDate = cdf.format(new Date());
 		   

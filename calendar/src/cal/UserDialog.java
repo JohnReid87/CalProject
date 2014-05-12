@@ -181,8 +181,10 @@ public class UserDialog implements Runnable{
 		}
 		
 		if(error != true){
+			String r;
 			int res;
-			res = fetchPush.login(email, pw.toString());
+			r = fetchPush.login(email, pw.toString());
+			res = Integer.parseInt(r);
 			if(!(res < 0)) // all good continue
 				usr = new User(res);
 		}
