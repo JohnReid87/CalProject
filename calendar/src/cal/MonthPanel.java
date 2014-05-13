@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Calendar;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -20,13 +21,18 @@ public class MonthPanel extends JPanel implements ActionListener{
 
 	protected int month;
 	protected int year;
-	protected JButton createApptBtn = new JButton("Create Appointment");
-
+	
 	protected String[] monthNames = { "January", "February", "March", "April",
 			"May", "June", "July", "August", "September", "October",
 			"November", "December" };
 
 	protected String[] dayNames = { "S", "M", "T", "W", "T", "F", "S" };
+
+	private JPanel ctrlPanel;
+
+	private JButton createApptBtn;
+
+	private AbstractButton weeklyViewBtn;
 
 	public MonthPanel(int month, int year) {
 		this.month = month;
@@ -37,14 +43,14 @@ public class MonthPanel extends JPanel implements ActionListener{
 	
 
 	protected JPanel createGUI() {
-		createApptBtn.addActionListener(this);
+
+		
 		
 		JPanel monthPanel = new JPanel(true);
 		monthPanel.setLayout(new BorderLayout());
 		monthPanel.setBackground(Color.WHITE);
 		monthPanel.setForeground(Color.BLACK);
-		
-		monthPanel.add(createApptBtn);
+
 		monthPanel.add(createTitleGUI(), BorderLayout.NORTH);
 		monthPanel.add(createDaysGUI(), BorderLayout.SOUTH);
 		
@@ -55,13 +61,25 @@ public class MonthPanel extends JPanel implements ActionListener{
 
 	protected JPanel createTitleGUI() {
 		JPanel titlePanel = new JPanel(true);
-		titlePanel.setLayout(new FlowLayout());
+		titlePanel.setLayout(new GridLayout(2,0));
 		titlePanel.setBackground(Color.WHITE);
 
 		JLabel label = new JLabel(monthNames[month] + " " + year);
 		label.setForeground(SystemColor.activeCaption);
 
 		titlePanel.add(label, BorderLayout.CENTER);
+		
+		//control buttons panel
+		ctrlPanel = new JPanel(new FlowLayout());
+		createApptBtn = new JButton("Create Appointment");
+		createApptBtn.addActionListener(this);
+		weeklyViewBtn = new JButton("Weekly View");
+		weeklyViewBtn.addActionListener(this);
+		ctrlPanel.add(createApptBtn);
+		ctrlPanel.add(weeklyViewBtn);
+		
+		
+		titlePanel.add(ctrlPanel);
 		return titlePanel;
 	}
 
@@ -148,6 +166,8 @@ public class MonthPanel extends JPanel implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == createApptBtn) { //Create Appointment button clicked..
 			new CreateAppointment();
+		}else if(e.getSource() == weeklyViewBtn){
+			CalendarFrame.setVisibleView(C.WEEKLY_VIEW);
 		}
 	}
 }
