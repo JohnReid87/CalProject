@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Calendar;
+
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -20,7 +21,7 @@ public class MonthPanel extends JPanel implements ActionListener {
 	protected int month;
 	protected int year;
 	protected JButton createApptBtn = new JButton("Create Appointment");
-	protected JButton prevBtn = new JButton("<-");
+	//protected JButton prevBtn = new JButton("<-");
 	String thisPersonID;
 
 	protected String[] monthNames = { "January", "February", "March", "April",
@@ -37,11 +38,11 @@ public class MonthPanel extends JPanel implements ActionListener {
 		this.add(createGUI());
 
 	}
-
+	static JPanel monthPanel;
 	protected JPanel createGUI() {
 		createApptBtn.addActionListener(this);
 
-		JPanel monthPanel = new JPanel(true);
+		 monthPanel = new JPanel(true);
 		monthPanel.setLayout(new BorderLayout());
 		monthPanel.setBackground(Color.WHITE);
 		monthPanel.setForeground(Color.BLACK);
@@ -65,10 +66,14 @@ public class MonthPanel extends JPanel implements ActionListener {
 		return titlePanel;
 	}
 
+	protected ArrayList<ArrayList<String>> appointments; // +++
+	protected ArrayList<JButton> dayButtonsList = new ArrayList<JButton>(); // +++
+	protected ArrayList<String> appdates = new ArrayList<String>();
+
 	protected JPanel createDaysGUI() {
 		JPanel dayPanel = new JPanel(true);
-		 JButton prevBtn = new JButton();		 
-			prevBtn.setText("<-");	
+		JButton prevBtn = new JButton();
+		prevBtn.setText("<-");
 		dayPanel.setLayout(new GridLayout(0, dayNames.length));
 		dayPanel.setBounds(getVisibleRect());
 		Calendar today = Calendar.getInstance();
@@ -86,7 +91,7 @@ public class MonthPanel extends JPanel implements ActionListener {
 				-(iterator.get(Calendar.DAY_OF_WEEK) - 1));
 
 		Calendar maximum = (Calendar) calendar.clone();
-		maximum.add(Calendar.MONTH, +1);
+		maximum.add(Calendar.MONTH, 1);
 
 		for (int i = 0; i < dayNames.length; i++) {
 			JButton dJButton = new JButton();
@@ -97,12 +102,11 @@ public class MonthPanel extends JPanel implements ActionListener {
 
 		int count = 0;
 		int limit = dayNames.length * 6;
-		ArrayList<ArrayList<String>> appointments = fetchPush
-				.fetchAppointments(thisPersonID);
-		ArrayList<String> appdates = new ArrayList<String>();
+		appointments = fetchPush.fetchAppointments(thisPersonID);
 		appdates.addAll(appointments.get(3));
 		while (iterator.getTimeInMillis() < maximum.getTimeInMillis()) {
 			JButton b = new JButton();
+			b.addActionListener(this);
 
 			int lMonth = iterator.get(Calendar.MONTH);
 			int lYear = iterator.get(Calendar.YEAR);
@@ -128,12 +132,17 @@ public class MonthPanel extends JPanel implements ActionListener {
 							&& (appDayi == lDay)) {
 						b.setBackground(Color.ORANGE);
 					}
+					// work in this case,
+					// +++ collect day buttons in an arraylist
 				}
 			} else {
-				dayLabel = (" ");
+				dayLabel = ("");
 				b.setBackground(Color.WHITE);
 			}
 			b.setText(dayLabel);
+			if (dayLabel.length()!= 0){
+				dayButtonsList.add(b); // day button b.addActionListener does not
+			}
 			dayPanel.add(b);
 			iterator.add(Calendar.DAY_OF_YEAR, +1);
 			count++;
@@ -150,12 +159,62 @@ public class MonthPanel extends JPanel implements ActionListener {
 
 		return dayPanel;
 	}
+	
+
+	
+	public void refresh(){
+	monthPanel.revalidate();
+	
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == createApptBtn) { // Create Appointment button
 												// clicked..
 			new CreateAppointment();
+		} else {
+
+			// Check if user invoked day button
+			System.out.println("Tried to view appt");
+			for (int i = 1; i < dayButtonsList.size(); i++) {
+
+				if (e.getSource() == dayButtonsList.get(i-1)) {
+
+					System.out.println("Tried to view appt" + (i-1));
+
+					int apptButtonDay = Integer.parseInt(dayButtonsList.get(i-1)
+							.getText());
+
+					// find appointment in appts list
+					for (int j = 0; j < appdates.size(); j++) {
+
+						int inApptDay = Integer.parseInt(appointments.get(3)
+								.get(j).substring(8, 10)); // parses day as Int
+															// from appointment
+															// entry
+
+						if (apptButtonDay == inApptDay) { // appointment found
+							ApptView showAppt = new ApptView();
+
+							// build appointment string
+							ArrayList<String> appt = new ArrayList<String>();
+							for (int field = 0; field < 6; field++) { // six
+																		// fields
+																		// in
+																		// total
+																		// without
+																		// PersonID
+								appt.add(appointments.get(field).get(j));
+							}
+
+							showAppt.showAppointment(appt);
+							break;
+						}
+
+					}
+
+				}
+			}
 		}
 	}
 }

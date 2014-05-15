@@ -19,7 +19,7 @@ import javax.swing.SwingUtilities;
 
 public class CalendarFrame implements Runnable {
 
-	private JFrame frame;
+	private static JFrame frame;
 	private static JPanel cards;
 	
 	
@@ -35,11 +35,15 @@ public class CalendarFrame implements Runnable {
 		String strMonth, strYear;
 		strMonth = curMonth.format(ca.getTime());
 		strYear = curYear.format(ca.getTime());
-		int month, year;
+		int month;
+		int year;
 		month = Integer.valueOf(strMonth) - 1;
 		year = Integer.valueOf(strYear);
-		MonthPanel panel = new MonthPanel(month, year);
-		WeekPanel weeklyPanel = new WeekPanel(); ///////////
+		int PersonID = User.getUserId();
+		String IDString = String.valueOf(PersonID);
+		MonthPanel panel = new MonthPanel(month, year, IDString);
+		//WeekPanel weeklyPanel = new WeekPanel(); ///////////
+		
 		
 		frame = new JFrame();
 		frame.setTitle("Calendar");
@@ -53,12 +57,12 @@ public class CalendarFrame implements Runnable {
 
 	
 		//card handling panel
-		cards = new JPanel(new CardLayout());
-		cards.add(panel, C.MONTHLY_VIEW);
-		cards.add(weeklyPanel, C.WEEKLY_VIEW);
+		//cards = new JPanel(new CardLayout());
+		//cards.add(panel, C.MONTHLY_VIEW);
+		//cards.add(weeklyPanel, C.WEEKLY_VIEW);
 		
 		frame.setLayout(new BorderLayout());
-		frame.add(cards, BorderLayout.CENTER);
+		frame.add(panel, BorderLayout.CENTER);
 		frame.pack();
 		frame.setBounds(400, 400, 400, 400);
 		frame.setVisible(true);
@@ -82,9 +86,8 @@ public class CalendarFrame implements Runnable {
 	}
 	
 
-	public void exitProcedure() {
+	public static void exitProcedure() {
 		frame.dispose();
-		System.exit(0);
 	}
 
 	public static void main(String[] args) {
